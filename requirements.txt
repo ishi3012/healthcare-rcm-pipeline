@@ -1,0 +1,28 @@
+# General Python dependencies
+pandas
+numpy
+pyyaml
+
+# Workflow Orchestration
+apache-airflow
+
+# Data Ingestion & Streaming
+kafka-python
+requests
+
+# Data Processing
+pyspark
+dbt-core
+
+# Database & Storage
+psycopg2-binary  # PostgreSQL connector
+snowflake-connector-python
+sqlalchemy
+
+# Machine Learning (Optional)
+scikit-learn
+mlflow
+
+# Monitoring & Logging
+prometheus-client
+loguru

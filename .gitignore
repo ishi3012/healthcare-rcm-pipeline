@@ -1,0 +1,38 @@
+# Ignore Python cache files
+__pycache__/
+*.pyc
+*.pyo
+
+# Ignore logs
+*.log
+
+# Ignore virtual environments
+venv/
+.env
+*.env
+
+# Ignore database files
+*.db
+*.sqlite3
+
+# Ignore system-specific files
+.DS_Store
+Thumbs.db
+
+# Ignore Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Ignore Airflow metadata database
+airflow.db
+
+# Ignore Spark temporary files
+derby.log
+metastore_db/
+
+# Ignore Kafka logs
+kafka-logs/
+
+# Ignore documentation images (optional)
+docs/architecture.png
+
+Project_Notes.txt
