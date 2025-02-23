@@ -1,7 +1,20 @@
+"""
+Generate Mock EDI 835 (Denials & Remittance) Data
+
+Goal:
+- Generates synthetic EDI 835 files with realistic remittance & denial information.
+- Each record includes claim ID, billed amount, paid amount, and denial reasons.
+- Fixes issue where "Fully Denied" or "Partially Denied" claims didn't always match denial reasons correctly.
+
+"""
+
 import random
 from faker import Faker
 
 fake = Faker()
+
+# List of realistic denial reason codes
+DENIAL_REASONS = ["CO-45", "CO-97", "PR-1", "OA-23", "CO-16", "CO-29", "PI-204", "CO-11"]
 
 def generate_edi_835(num_claims=100):
     """Generates a mock EDI 835 remittance/denials file"""
@@ -14,18 +27,35 @@ def generate_edi_835(num_claims=100):
         claim_id = f"CLAIM{random.randint(100000, 999999)}"
         patient_id = fake.uuid4()
         provider = fake.company()
-        paid_amount = round(random.uniform(50, 4000), 2)
-        status = random.choice(["Denied", "Paid Partially", "Paid Fully"])
-        denial_reason = random.choice(["CO-45", "CO-97", "PR-1"]) if status == "Denied" else ""
+        billed_amount = round(random.uniform(100, 5000), 2)  # Original billed amount
+
+        # Determine payment status with fixed logic
+        status_probabilities = {"Fully Denied": 0.3, "Partially Denied": 0.4, "Paid Fully": 0.3}
+        payment_type = random.choices(list(status_probabilities.keys()), weights=status_probabilities.values())[0]
+        print(f" Status = {payment_type}")
+        
+        if payment_type == "Fully Denied":
+            paid_amount = 0.00
+            denial_reason = random.choice(DENIAL_REASONS)  
+        elif payment_type == "Partially Denied":
+            paid_amount = round(billed_amount * random.uniform(0.3, 0.9), 2)  
+            denial_reason = random.choice(DENIAL_REASONS) 
+        else:  # Paid Fully
+            paid_amount = billed_amount
+            denial_reason = ""  
 
         edi_lines.append(f"ST*835*{claim_id}~")
         edi_lines.append(f"BPR*I*{paid_amount}*C*ACH*CTX*01*999999999*DA*12345678*999999999*DA*87654321~")
         edi_lines.append(f"TRN*1*{claim_id}*PAYERID~")
         edi_lines.append(f"REF*EV*{patient_id}~")
         edi_lines.append(f"DTM*405*20230101~")
-        edi_lines.append(f"CLP*{claim_id}*{status}*{paid_amount}***12*PROVIDERID~")
-        if denial_reason:
-            edi_lines.append(f"CAS*CO*{denial_reason}*100.00~")
+        edi_lines.append(f"CLP*{claim_id}*{payment_type}*{billed_amount}*{paid_amount}***12*PROVIDERID~")
+
+        # Add denial reason only when applicable
+        if payment_type in ["Fully Denied", "Partially Denied"]:
+            denied_amount = round(billed_amount - paid_amount, 2)
+            edi_lines.append(f"CAS*CO*{denial_reason}*{denied_amount}~")
+
         edi_lines.append(f"SE*6*{claim_id}~")
 
     edi_lines.append("GE*1*2~")
@@ -41,11 +71,10 @@ def count_edi_records(file_path, record_type):
     record_count = sum(1 for line in content if line.startswith(f"ST*{record_type}"))
     print(f"\n {record_type} Records in {file_path}: {record_count}\n")
 
-
 if __name__ == "__main__":
     # Write to file
     raw_file_path = "data_samples/edi_835_sample.txt"
     with open(raw_file_path, "w") as f:
         f.write(generate_edi_835(100))
-    print("\n Mock EDI 835 remittance/denials file generated: edi_835_sample.txt")
-    count_edi_records(raw_file_path,"835")
+    print("\n✅ Mock EDI 835 remittance/denials file generated: edi_835_sample.txt")
+    count_edi_records(raw_file_path, "835")

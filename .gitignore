@@ -33,6 +33,7 @@ metastore_db/
 kafka-logs/
 
 # Ignore documentation images (optional)
-docs/architecture.png
+# docs/architecture.png
 
 Project_Notes.txt
+Project_Notes_CloudImpl.md
